@@ -24,6 +24,7 @@ public enum PopoverOption {
     case highlightCornerRadius(CGFloat)
     case springDamping(CGFloat)
     case initialSpringVelocity(CGFloat)
+    case senderWrapperParent(Bool)
 }
 
 @objc public enum PopoverType: Int {
@@ -49,7 +50,7 @@ open class Popover: UIView {
     open var cornerRadius               : CGFloat       = 6.0
     open var sideEdge                   : CGFloat       = 20.0
     open var popoverType                : PopoverType   = .auto
-    open var blackOverlayColor          : UIColor       = UIColor(white: 0.0, alpha: 0.2)
+    open var blackOverlayColor          : UIColor       = UIColor(white: 0.0, alpha: 0.3)
     open var overlayBlur                : UIBlurEffect?
     open var popoverColor               : UIColor       = UIColor.white
     open var dismissOnBlackOverlayTap   : Bool          = true
@@ -58,6 +59,7 @@ open class Popover: UIView {
     open var highlightCornerRadius      : CGFloat       = 0
     open var springDamping              : CGFloat       = 0.7
     open var initialSpringVelocity      : CGFloat       = 3
+    open var senderWrapperParent        : Bool          = false
     
     // custom closure
     open var willShowHandler            : (() -> ())?
@@ -175,6 +177,8 @@ private extension Popover {
                     self.springDamping = value
                 case let .initialSpringVelocity(value):
                     self.initialSpringVelocity = value
+                case let .senderWrapperParent(value):
+                    self.senderWrapperParent = value
                 }
             }
         }
@@ -333,7 +337,11 @@ extension Popover {
         if self.dismissOnBlackOverlayTap || self.showBlackOverlay {
             self.blackOverlay.autoresizingMask = [.flexibleWidth, .flexibleHeight]
             self.blackOverlay.frame = parent.view.bounds
-            parent.view.insertSubview(self.blackOverlay, at: 0)
+            if senderWrapperParent, let sender_parent = sender.superview {
+                parent.view.insertSubview(blackOverlay, belowSubview: sender_parent)
+            } else {
+                parent.view.insertSubview(self.blackOverlay, at: 0)
+            }
             
             if showBlackOverlay {
                 if let overlayBlur = self.overlayBlur {
@@ -650,8 +658,8 @@ extension Popover {
             )
         }
         
-        color.setFill()
-        arrow.fill()
+        //color.setFill()
+        //arrow.fill()
         return arrow
     }
     
